@@ -25,7 +25,12 @@
             </svg>
             <span class="brand-text">GRAM-VOICE</span>
         </a>
-        <div class="nav-links">
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" style="display: none;">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="nav-links" id="navLinks">
             <a href="#features" class="btn-ghost">FEATURES</a>
             <a href="app.html" class="btn btn-primary">LAUNCH APP</a>
         </div>
@@ -161,5 +166,25 @@
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        // Mobile Menu Toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        
+        if (menuToggle && navLinks) {
+            menuToggle.addEventListener('click', () => {
+                menuToggle.classList.toggle('active');
+                navLinks.classList.toggle('open');
+            });
+            
+            // Close menu when a link is clicked
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    menuToggle.classList.remove('active');
+                    navLinks.classList.remove('open');
+                });
+            });
+        }
+    </script>
 </body>
 </html>
