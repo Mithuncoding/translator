@@ -1,29 +1,42 @@
-from flask import Flask, request, send_file
-from flask_cors import CORS
+from http.server import BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
 from gtts import gTTS
 import io
+import json
 
-app = Flask(__name__)
-CORS(app)
-
-@app.route('/', methods=['GET'])
-def tts():
-    text = request.args.get('text')
-    lang = request.args.get('lang', 'en')
-    
-    if '-' in lang:
-        lang = lang.split('-')[0]
-    
-    if not text:
-        return {'error': 'No text provided'}, 400
-
-    try:
-        mp3_fp = io.BytesIO()
-        tts_obj = gTTS(text=text, lang=lang)
-        tts_obj.write_to_fp(mp3_fp)
-        mp3_fp.seek(0)
-        return send_file(mp3_fp, mimetype='audio/mpeg')
-    except Exception as e:
-        return {'error': str(e)}, 500
-
-# Vercel requires 'app' to be exposed
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        # Parse query parameters
+        query = parse_qs(urlparse(self.path).query)
+        text = query.get('text', [None])[0]
+        lang = query.get('lang', ['en'])[0]
+        
+        # Strip region code (e.g. 'kn-IN' -> 'kn')
+        if lang and '-' in lang:
+            lang = lang.split('-')[0]
+        
+        if not text:
+            self.send_response(400)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({'error': 'No text provided'}).encode())
+            return
+        
+        try:
+            mp3_fp = io.BytesIO()
+            tts = gTTS(text=text, lang=lang)
+            tts.write_to_fp(mp3_fp)
+            mp3_fp.seek(0)
+            
+            self.send_response(200)
+            self.send_header('Content-Type', 'audio/mpeg')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(mp3_fp.read())
+        except Exception as e:
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({'error': str(e)}).encode())
