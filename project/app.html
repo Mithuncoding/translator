@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gram-Voice Translator - Translate between 10+ Indian languages.">
+    <title>GRAM-VOICE | TRANSLATOR</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+</head>
+<body class="app-page">
+    <!-- Wireframe Background -->
+    <div class="wireframe-bg">
+        <div class="wireframe-grid"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar glass">
+        <a href="index.html" class="brand">
+            <svg class="brand-logo" width="32" height="32" viewBox="0 0 512 512">
+                <rect x="0" y="0" width="512" height="512" rx="100" fill="#4CC9F0" />
+                <path d="M150 150 L150 362 L250 362 L250 250 L350 250 L350 362 L250 362 M350 150 L350 250" stroke="white" stroke-width="60" fill="none" stroke-linecap="round"/>
+            </svg>
+            <span class="brand-text">GRAM-VOICE</span>
+        </a>
+        <div class="nav-links">
+            <button id="theme-toggle" class="btn-icon sm" title="Toggle Theme">◐</button>
+            <button id="history-toggle" class="btn btn-ghost">HISTORY</button>
+        </div>
+    </nav>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- App Container -->
+    <div class="app-container">
+        
+        <!-- Main Panel -->
+        <main class="main-panel">
+            
+            <!-- Mode Switcher -->
+            <div class="mode-switcher">
+                <div class="mode-tabs">
+                    <button class="mode-tab active" data-mode="voice">🎙️ VOICE</button>
+                    <button class="mode-tab" data-mode="text">⌨️ TEXT</button>
+                </div>
+            </div>
+
+            <!-- Language Controls -->
+            <div class="lang-controls">
+                <div class="lang-select-wrapper">
+                    <label class="lang-label">FROM</label>
+                    <select id="lang-source" class="lang-select">
+                        <option value="en-IN">ENGLISH</option>
+                        <option value="hi-IN">HINDI</option>
+                        <option value="kn-IN">KANNADA</option>
+                        <option value="ta-IN">TAMIL</option>
+                        <option value="te-IN">TELUGU</option>
+                        <option value="bn-IN">BENGALI</option>
+                        <option value="mr-IN">MARATHI</option>
+                        <option value="gu-IN">GUJARATI</option>
+                        <option value="ml-IN">MALAYALAM</option>
+                        <option value="pa-IN">PUNJABI</option>
+                    </select>
+                </div>
+                
+                <button class="swap-btn" id="swap-lang" title="Swap Languages">⇄</button>
+
+                <div class="lang-select-wrapper">
+                    <label class="lang-label">TO</label>
+                    <select id="lang-target" class="lang-select">
+                        <option value="hi-IN">HINDI</option>
+                        <option value="kn-IN">KANNADA</option>
+                        <option value="ta-IN">TAMIL</option>
+                        <option value="te-IN">TELUGU</option>
+                        <option value="en-IN">ENGLISH</option>
+                        <option value="bn-IN">BENGALI</option>
+                        <option value="mr-IN">MARATHI</option>
+                        <option value="gu-IN">GUJARATI</option>
+                        <option value="ml-IN">MALAYALAM</option>
+                        <option value="pa-IN">PUNJABI</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Text Panels -->
+            <div class="text-panels">
+                <!-- Input -->
+                <div class="text-panel">
+                    <div class="panel-header">
+                        <span class="panel-label">ORIGINAL</span>
+                        <div class="panel-actions">
+                            <button class="btn-icon xs" id="copy-source" title="Copy">📋</button>
+                            <button class="btn-icon xs" id="speak-source" title="Speak">🔊</button>
+                            <button class="btn-icon xs" id="clear-source" title="Clear">✕</button>
+                        </div>
+                    </div>
+                    <textarea id="source-text" class="text-input" placeholder="Start speaking or type here..."></textarea>
+                </div>
+
+                <!-- Output -->
+                <div class="text-panel">
+                    <div class="panel-header">
+                        <span class="panel-label">TRANSLATION</span>
+                        <div class="panel-actions">
+                            <button class="btn-icon xs" id="copy-target" title="Copy">📋</button>
+                            <button class="btn-icon xs" id="speak-target" title="Speak">🔊</button>
+                        </div>
+                    </div>
+                    <textarea id="target-text" class="text-input output" placeholder="Translation appears here..." readonly></textarea>
+                </div>
+            </div>
+
+            <!-- Voice Controls -->
+            <div class="voice-controls" id="voice-controls">
+                <div class="visualizer" id="visualizer"></div>
+                <button class="mic-btn" id="mic-btn">🎙️</button>
+                <div class="mic-status" id="mic-status">TAP TO SPEAK</div>
+            </div>
+
+            <!-- Text Actions -->
+            <div class="text-actions" id="text-actions" style="display: none;">
+                <button class="btn btn-primary" id="translate-btn">TRANSLATE →</button>
+            </div>
+
+        </main>
+
+        <!-- History Sidebar -->
+        <aside class="history-sidebar glass-strong" id="history-sidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-title">HISTORY</h2>
+                <button class="btn-icon xs sidebar-close" id="sidebar-close">✕</button>
+            </div>
+            
+            <div class="history-list" id="history-list">
+                <div class="history-empty">
+                    <p>NO TRANSLATIONS YET</p>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button class="clear-history-btn" id="clear-history">CLEAR ALL</button>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">COPIED</div>
+
+    <script src="script.js"></script>
+</body>
+</html>
