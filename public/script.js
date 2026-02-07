@@ -219,12 +219,15 @@ function initApp() {
     });
   });
 
-  // Speech Recognition Setup
+  // Speech Recognition Setup (Enhanced for Mobile)
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
   if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SR();
     recognition.continuous = false;
     recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
       isListening = true;
@@ -260,19 +263,78 @@ function initApp() {
     recognition.onerror = (e) => {
       isListening = false;
       micBtn.classList.remove('listening');
-      micStatus.textContent = e.error === 'no-speech' ? 'No speech detected' : 'Error. Try again.';
       stopVisualizer();
+      
+      // Mobile-specific error handling
+      const errorMessages = {
+        'no-speech': 'No speech detected. Try again.',
+        'audio-capture': 'Microphone not found. Check permissions.',
+        'not-allowed': 'Microphone blocked. Allow in browser settings.',
+        'network': 'Network error. Check connection.',
+        'aborted': 'Stopped. Tap to try again.',
+        'service-not-allowed': 'Speech service busy. Close other apps, then try again.',
+        'language-not-supported': 'Language not supported for voice input.'
+      };
+      
+      const msg = errorMessages[e.error] || `Error: ${e.error}. Tap to retry.`;
+      micStatus.textContent = msg;
+      
+      // Show toast with helpful tip for mobile
+      if (isMobile && (e.error === 'aborted' || e.error === 'service-not-allowed' || e.error === 'not-allowed')) {
+        showToast('Tip: Close other voice apps & refresh page');
+      }
+      
+      console.error('Speech Recognition Error:', e.error);
+    };
+
+    // Handle audio abort (common on mobile when switching apps)
+    recognition.onaudioend = () => {
+      if (isListening) {
+        console.log('Audio stream ended - stopping recognition');
+      }
     };
   } else {
     micBtn.disabled = true;
     micStatus.textContent = 'Speech not supported';
   }
 
-  // Mic button
-  micBtn.addEventListener('click', () => {
+  // Mic button with retry logic
+  micBtn.addEventListener('click', async () => {
     if (!recognition) return;
-    if (isListening) { recognition.stop(); }
-    else { recognition.lang = langSource.value; recognition.start(); }
+    
+    if (isListening) { 
+      recognition.stop(); 
+      return;
+    }
+    
+    // On mobile, try to request microphone permission explicitly first
+    if (isMobile && navigator.mediaDevices) {
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (err) {
+        micStatus.textContent = 'Mic permission denied';
+        showToast('Allow microphone access in browser settings');
+        return;
+      }
+    }
+    
+    recognition.lang = langSource.value;
+    
+    try {
+      recognition.start();
+    } catch (err) {
+      // Handle "already started" error
+      if (err.name === 'InvalidStateError') {
+        recognition.stop();
+        setTimeout(() => {
+          recognition.lang = langSource.value;
+          recognition.start();
+        }, 100);
+      } else {
+        micStatus.textContent = 'Error starting. Try again.';
+        console.error('Start error:', err);
+      }
+    }
   });
 
   // ═══════════════════════════════════════════════════════════════
